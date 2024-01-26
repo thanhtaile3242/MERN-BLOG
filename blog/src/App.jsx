@@ -5,6 +5,7 @@ import SignIn from "./pages/SignIn.jsx";
 import SignUp from "./pages/SignUp.jsx";
 import Dashboard from "./pages/DashBoard.jsx";
 import Header from "./components/Header.jsx";
+import Footer from "./components/Footer.jsx";
 import Projects from "./pages/Projects.jsx";
 const App = () => {
     return (
@@ -19,8 +20,8 @@ const App = () => {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/projects" element={<Projects />} />
                 </Routes>
+                <Footer />
             </BrowserRouter>
-            {/* <h1 className="text-3xl text-red-500">abc</h1> */}
         </>
     );
 };
