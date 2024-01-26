@@ -1,12 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
 import { Label, TextInput, Button, Alert, Spinner } from "flowbite-react";
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+    signInStart,
+    signInSuccess,
+    signInFailure,
+} from "../redux/user/userSlice.js";
 const SignIn = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({});
-    const [errorMessage, setErrorMessage] = useState(null);
-    const [isLoading, setIsLoading] = useState(false);
-
+    // const [errorMessage, setErrorMessage] = useState(null);
+    // const [isLoading, setIsLoading] = useState(false);
+    const dispatch = useDispatch();
+    const { loading, error: errorMessage } = useSelector((state) => state.user);
     const handleChange = (event) => {
         setFormData({
             ...formData,
@@ -16,13 +23,16 @@ const SignIn = () => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
-        setIsLoading(true);
+        // setIsLoading(true);
         if (!formData.email || !formData.password) {
-            setIsLoading(false);
-            return setErrorMessage("Please fill out all fields.");
+            // setIsLoading(false);
+            // return setErrorMessage("Please fill out all fields.");
+            return dispatch(signInFailure("Please fill out all fields"));
         }
         try {
-            setErrorMessage(null);
+            // setIsLoading(true);
+            // setErrorMessage(null);
+            dispatch(signInStart());
             const response = await fetch("/api/auth/signin", {
                 method: "POST",
                 headers: {
@@ -32,16 +42,19 @@ const SignIn = () => {
             });
             const data = await response.json();
             if (data.success === false) {
-                setIsLoading(false);
-                return setErrorMessage(data.message);
+                // setIsLoading(false);
+                // return setErrorMessage(data.message);
+                dispatch(signInFailure(data.message));
             }
             if (data.success) {
+                dispatch(signInSuccess(data));
                 navigate("/");
             }
-            setIsLoading(false);
+            // setIsLoading(false);
         } catch (error) {
-            setErrorMessage(error.message);
-            setIsLoading(false);
+            // setErrorMessage(error.message);
+            // setIsLoading(false);
+            dispatch(signInFailure(error.message));
         }
     };
     return (
@@ -92,9 +105,9 @@ const SignIn = () => {
                             <Button
                                 gradientDuoTone="purpleToPink"
                                 type="submit"
-                                disabled={isLoading}
+                                disabled={loading}
                             >
-                                {isLoading ? (
+                                {loading ? (
                                     <>
                                         <Spinner size="sm" />
                                         <span className="pl-3">
