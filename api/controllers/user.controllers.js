@@ -3,3 +3,4 @@ export const test = (req, res) => {
         message: "API ne",
     });
 };
+export const updateUser = async (req, res, next) => {};
