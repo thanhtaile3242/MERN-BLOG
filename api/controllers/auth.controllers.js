@@ -62,6 +62,7 @@ export const signin = async (req, res, next) => {
             _id: validUser._id,
             username: validUser.username,
             email: validUser.email,
+            profilePicture: validUser.profilePicture,
         };
         return res
             .status(200)
