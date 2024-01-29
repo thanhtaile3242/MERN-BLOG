@@ -55,7 +55,7 @@ export const signin = async (req, res, next) => {
         const token = jwt.sign(
             {
                 id: validUser._id,
-                idAdmin: validUser.isAdmin,
+                isAdmin: validUser.isAdmin,
             },
             process.env.JWT_SECRET
         );
@@ -64,6 +64,7 @@ export const signin = async (req, res, next) => {
             username: validUser.username,
             email: validUser.email,
             profilePicture: validUser.profilePicture,
+            isAdmin: validUser.isAdmin,
         };
         return res
             .status(200)
