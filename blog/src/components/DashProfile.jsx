@@ -1,6 +1,7 @@
 import { useSelector } from "react-redux";
 import { useState, useRef, useEffect } from "react";
 import { TextInput, Button, Alert, Modal } from "flowbite-react";
+import { Link, useLocation } from "react-router-dom";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import {
@@ -24,7 +25,7 @@ import { HiOutlineExclamationCircle } from "react-icons/hi";
 const DashProfile = () => {
     const dispatch = useDispatch();
     const filePickerRef = useRef();
-    const { currentUser, error } = useSelector((state) => state.user);
+    const { currentUser, error, loading } = useSelector((state) => state.user);
     const [imageFile, setImageFile] = useState(null);
     const [imageFileUrl, setImageFileUrl] = useState(null);
     const [imageFileUploadProgress, setImageFileUploadProgress] =
@@ -249,9 +250,21 @@ const DashProfile = () => {
                         type="submit"
                         gradientDuoTone="purpleToBlue"
                         outline
+                        disable={loading || imageFileUploading}
                     >
-                        Update
+                        {loading ? "Loading ..." : "Update"}
                     </Button>
+                    {currentUser.data.isAdmin && (
+                        <Link to="/create-post">
+                            <Button
+                                type="button"
+                                gradientDuoTone="purpleToPink"
+                                className="w-full"
+                            >
+                                Create a post
+                            </Button>
+                        </Link>
+                    )}
                 </form>
                 <div className="text-red-500 flex justify-between mt-5">
                     <span
