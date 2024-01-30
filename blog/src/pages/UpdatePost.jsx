@@ -1,7 +1,7 @@
 import { TextInput, Select, FileInput, Button, Alert } from "flowbite-react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     getDownloadURL,
     getStorage,
@@ -9,17 +9,38 @@ import {
     uploadBytesResumable,
 } from "firebase/storage";
 import { app } from "../firebase.js";
+import { useSelector } from "react-redux";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import { useNavigate } from "react-router-dom";
-const CreatePost = () => {
+import { useNavigate, useParams } from "react-router-dom";
+const UpdatePost = () => {
     const navigate = useNavigate();
+    const { currentUser } = useSelector((state) => state.user);
     const [file, setFile] = useState(null);
     const [imageUploadProgress, setImageUploadProgress] = useState(null);
     const [imageUploadError, setImageUploadError] = useState(null);
     const [formData, setFormData] = useState({});
     const [publishError, setPublishError] = useState(null);
-
+    const { postId } = useParams();
+    useEffect(() => {
+        try {
+            const fetchPost = async () => {
+                const res = await fetch(`/api/post/getposts?postId=${postId}`);
+                const data = await res.json();
+                if (!res.ok) {
+                    console.log(data.message);
+                    setPublishError(data.message);
+                    return;
+                } else {
+                    setPublishError(null);
+                    setFormData(data.posts[0]);
+                }
+            };
+            fetchPost();
+        } catch (error) {
+            console.log(error.message);
+        }
+    }, [postId]);
     const handleUploadImage = async () => {
         try {
             if (!file) {
@@ -61,13 +82,16 @@ const CreatePost = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
         try {
-            const res = await fetch("/api/post/create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-            });
+            const res = await fetch(
+                `/api/post/updatepost/${formData._id}/${currentUser.data._id}`,
+                {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(formData),
+                }
+            );
             const data = await res.json();
             if (!res.ok) {
                 setPublishError(data.message);
@@ -90,6 +114,7 @@ const CreatePost = () => {
                 <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
                     <div className="flex flex-col gap-4 sm:flex-row justify-between">
                         <TextInput
+                            value={formData.title}
                             type="text"
                             placeholder="Title"
                             required
@@ -103,6 +128,7 @@ const CreatePost = () => {
                             }}
                         ></TextInput>
                         <Select
+                            value={formData.category}
                             onChange={(event) => {
                                 setFormData({
                                     ...formData,
@@ -156,6 +182,7 @@ const CreatePost = () => {
                         />
                     )}
                     <ReactQuill
+                        value={formData.content}
                         theme="snow"
                         placeholder="Write something..."
                         className="h-72 mb-12"
@@ -165,7 +192,7 @@ const CreatePost = () => {
                         }}
                     />
                     <Button type="submit" gradientDuoTone="purpleToPink">
-                        Submit
+                        Update post
                     </Button>
                     {publishError && (
                         <>
@@ -179,4 +206,4 @@ const CreatePost = () => {
         </>
     );
 };
-export default CreatePost;
+export default UpdatePost;
