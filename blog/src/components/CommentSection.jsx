@@ -1,11 +1,17 @@
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { Textarea, Button, Alert } from "flowbite-react";
-import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Textarea, Button, Alert, Modal } from "flowbite-react";
+import { useState, useEffect } from "react";
+import Comment from "./Comment.jsx";
+import { HiOutlineExclamationCircle } from "react-icons/hi";
 const CommentSection = ({ postId }) => {
+    const navigate = useNavigate();
     const { currentUser } = useSelector((state) => state.user);
     const [comment, setComment] = useState("");
     const [commentError, setCommentError] = useState("");
+    const [comments, setComments] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [commentToDelete, setCommnetToDelete] = useState(null);
     const handleSubmit = async (event) => {
         event.preventDefault();
         if (comment.length > 200) {
@@ -27,9 +33,80 @@ const CommentSection = ({ postId }) => {
             if (res.ok) {
                 setComment("");
                 setCommentError(null);
+                setComments([data, ...comments]);
             }
         } catch (error) {
             setCommentError(error.message);
+        }
+    };
+    useEffect(() => {
+        const getComments = async () => {
+            try {
+                const res = await fetch(
+                    `/api/comment/getPostComments/${postId}`
+                );
+                if (res.ok) {
+                    const data = await res.json();
+                    setComments(data);
+                }
+            } catch (error) {
+                console.log(error.message);
+            }
+        };
+        getComments();
+    }, [postId]);
+    const handleLike = async (commentId) => {
+        try {
+            if (!currentUser) {
+                navigate("/sign-in");
+                return;
+            }
+            const res = await fetch(`/api/comment/likeComment/${commentId}`, {
+                method: "PUT",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(
+                    comments.map((comment) =>
+                        comment._id === commentId
+                            ? {
+                                  ...comment,
+                                  likes: data.likes,
+                                  numberOfLikes: data.likes.length,
+                              }
+                            : comment
+                    )
+                );
+            }
+        } catch (error) {
+            console.log(error.message);
+        }
+    };
+    const onEdit = async (comment, editedContent) => {
+        setComments(
+            comments.map((c) =>
+                c._id === comment._id ? { ...c, content: editedContent } : c
+            )
+        );
+    };
+    const handleDelete = async (commentId) => {
+        setShowModal(false);
+        try {
+            if (!currentUser) {
+                navigate("/sign-in");
+                return;
+            }
+            const res = await fetch(`/api/comment/deleteComment/${commentId}`, {
+                method: "DELETE",
+            });
+            if (res.ok) {
+                const data = await res.json();
+                setComments(
+                    comments.filter((comment) => comment._id !== commentId)
+                );
+            }
+        } catch (error) {
+            console.log(error.message);
         }
     };
     return (
@@ -94,6 +171,68 @@ const CommentSection = ({ postId }) => {
                     )}
                 </form>
             )}
+            {comments.length === 0 ? (
+                <p className="text-sm my-5">Not comments yet!</p>
+            ) : (
+                <>
+                    <div className="text-sm my-5 flex items-center gap-1">
+                        <p>Comments</p>
+                        <div className="border border-gray-400 py-1 px-2 rounded-sm">
+                            <p>{comments.length}</p>
+                        </div>
+                    </div>
+                    {comments.map((comment) => {
+                        return (
+                            <Comment
+                                key={comment._id}
+                                comment={comment}
+                                handleLike={handleLike}
+                                onEdit={onEdit}
+                                onDelete={(commentId) => {
+                                    setShowModal(true);
+                                    setCommnetToDelete(commentId);
+                                }}
+                            />
+                        );
+                    })}
+                </>
+            )}
+            <Modal
+                show={showModal}
+                onClose={() => {
+                    setShowModal(false);
+                }}
+                popup
+                size="md"
+            >
+                <Modal.Header />
+                <Modal.Body>
+                    <div className="text-center">
+                        <HiOutlineExclamationCircle className="h-14 w-14 text-gray-400 dark:text-gray-200 mb-4 mx-auto" />
+                        <h3 className="mb-5 text-lg text-gray-500 dark:text-gray-400">
+                            Are you sure to delete this comment?
+                        </h3>
+                        <div className="flex justify-center gap-4">
+                            <Button
+                                color="failure"
+                                onClick={() => {
+                                    handleDelete(commentToDelete);
+                                }}
+                            >
+                                Yes
+                            </Button>
+                            <Button
+                                color="gray"
+                                onClick={() => {
+                                    setShowModal(false);
+                                }}
+                            >
+                                No
+                            </Button>
+                        </div>
+                    </div>
+                </Modal.Body>
+            </Modal>
         </div>
     );
 };
