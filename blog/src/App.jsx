@@ -6,13 +6,14 @@ import SignUp from "./pages/SignUp.jsx";
 import Dashboard from "./pages/DashBoard.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
-import Projects from "./pages/Projects.jsx";
+
 import PrivateRoute from "./components/PrivateRoute.jsx";
 import OnlyAdminPrivateRoute from "./components/OnlyAdminPrivateRoute.jsx";
 import ScrollToTop from "./components/ScrollToTop.jsx";
 import CreatePost from "./pages/CreatePost.jsx";
 import UpdatePost from "./pages/UpdatePost.jsx";
 import PostPage from "./pages/PostPage.jsx";
+import Search from "./pages/Search.jsx";
 const App = () => {
     return (
         <>
@@ -24,6 +25,7 @@ const App = () => {
                     <Route path="/about" element={<About />} />
                     <Route path="/sign-in" element={<SignIn />} />
                     <Route path="/sign-up" element={<SignUp />} />
+                    <Route path="/search" element={<Search />} />
                     <Route element={<PrivateRoute />}>
                         <Route path="/dashboard" element={<Dashboard />} />
                     </Route>
@@ -35,7 +37,6 @@ const App = () => {
                         />
                     </Route>
                     <Route path="/post/:postSlug" element={<PostPage />} />
-                    <Route path="/projects" element={<Projects />} />
                 </Routes>
                 <Footer />
             </BrowserRouter>

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 const PostCard = ({ post }) => {
     return (
         <div
-            className="group relative w-full border border-teal-500 hover:border-2 h-[400px]
+            className="group relative w-full border border-teal-500 hover:border-2 h-[350px]
         overflow-hidden rounded-lg sm:w-[350px] transition-all
         "
         >
